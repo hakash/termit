@@ -1,0 +1,2 @@
+# termit
+Simple terminal editor

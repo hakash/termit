@@ -25,7 +25,6 @@
   },
   "homepage": "https://github.com/hakash/termit#readme",
   "dependencies": {
-    "ne": "0.0.28",
     "terminal-kit": "^1.26.10"
   }
 }

@@ -1,5 +1,9 @@
 # Termit - The TERMinal edITor
 
+```sh
+npm i termit -g
+```
+
 Termit is a simple terminal editor somewhat inspired by Nano. It delivers the most basic text editing features like writing (obviously), cutting lines and uncutting or pasting lines.
 
 Navigation includes arrow keys, page up and down, home and end on each line as well as start of document and end of document.

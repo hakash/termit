@@ -17,7 +17,7 @@ class Termit {
 
 		this.disableOpen = options.disableOpen || false;
 		this.disableSaveAs = options.disableSaveAs || false;
-		this.defaults.titleBar.title = options.title || this.defaults.titleBar.title;
+		defaults.titleBar.title = options.title || defaults.titleBar.title;
 
 		this.term = terminalKit.terminal;
 		this.statusBarTimer = undefined;

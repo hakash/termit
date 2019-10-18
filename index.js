@@ -5,7 +5,7 @@ const fs = require('fs');
 
 let defaults = {
 	statusBar: {
-		message: 'Ctrl+?: X:save&eXit C:exit O:Open S:Save A:save As K:cut line U:paste line'
+		message: 'Ctrl+  X:save & eXit  C:exit  O:Open  S:Save  A:save As  K:cut line  U:paste line'
 	},
 	titleBar: {
 		title: 'Welcome to Termit - The TERMinal edITor!'
@@ -54,26 +54,25 @@ class Termit {
 
 		this.draw();
 
-		if(file){
+		if (file) {
 			this.load(file);
 		}
 	}
 
 	drawBar(pos, message, invert = false) {
-		if(invert){
+		if (invert) {
 			this.term.moveTo(pos.x, pos.y).styleReset.white.bold.eraseLine(' ' + message);
-		}
-		else {
+		} else {
 			this.term.moveTo(pos.x, pos.y).styleReset.bgWhite.black.bold.eraseLine(' ' + message);
 		}
 	}
 
-	drawPrompt(prompt){
+	drawPrompt(prompt) {
 		this.drawBar({
 			x: 0,
 			y: this.term.height
 		}, prompt, true);
-		if(this.statusBarTimer) {
+		if (this.statusBarTimer) {
 			clearTimeout(this.statusBarTimer);
 		}
 
@@ -86,11 +85,13 @@ class Termit {
 		}, message);
 
 		this.textBuffer.draw();
-		this.screenBuffer.draw({delta:true});
+		this.screenBuffer.draw({
+			delta: true
+		});
 		this.textBuffer.drawCursor();
 		this.screenBuffer.drawCursor();
 
-		if(this.statusBarTimer) {
+		if (this.statusBarTimer) {
 			clearTimeout(this.statusBarTimer);
 		}
 
@@ -110,35 +111,36 @@ class Termit {
 		}, defaults.titleBar.title);
 	}
 
-	open(){
-		if(this.disableOpen) { return; }
-		
-		this.getFileName('Open file: ',file => this.load(file));
+	open() {
+		if (this.disableOpen) {
+			return;
+		}
+
+		this.getFileName('Open file: ', file => this.load(file));
 	}
 
-	load(file){
+	load(file) {
 		let content = '';
 		this.disableUserInteraction = true;
 		try {
-			if(fs.existsSync(file)){
-				content = fs.readFileSync(file,'utf8');
+			if (fs.existsSync(file)) {
+				content = fs.readFileSync(file, 'utf8');
 			}
 			this.currentFile = file;
-		}
-		catch(e){
+		} catch (e) {
 			this.drawStatusBar('ERROR: Failed to load file: ' + file, 3500);
 		}
 
-		this.textBuffer.moveTo(0,0);
+		this.textBuffer.moveTo(0, 0);
 		this.textBuffer.setText('');
 		this.textBuffer.insert(content);
-		this.textBuffer.moveTo(0,0);
+		this.textBuffer.moveTo(0, 0);
 		this.fileIsModified = false;
 		this.disableUserInteraction = false;
 		this.draw();
 	}
 
-	save(file, callback = ()=>{}){
+	save(file, callback = () => {}) {
 		this.disableUserInteraction = true;
 		try {
 			fs.writeFileSync(file, this.textBuffer.getText());
@@ -147,24 +149,24 @@ class Termit {
 			this.drawStatusBar('Saved!', 2000);
 			this.disableUserInteraction = false;
 			callback();
-		}
-		catch(e){
+		} catch (e) {
 			this.disableUserInteraction = false;
 			callback(e);
 		}
 	}
 
-	saveAs(callback){
-		if(this.disableSaveAs) { return; }
+	saveAs(callback) {
+		if (this.disableSaveAs) {
+			return;
+		}
 
 		this.getFileName('Save as: ', file => this.save(file, callback), this.currentFile);
 	}
 
-	saveFile(callback){
-		if(this.currentFile){
+	saveFile(callback) {
+		if (this.currentFile) {
 			this.save(this.currentFile, callback);
-		}
-		else {
+		} else {
 			this.saveAs(callback);
 		}
 	}
@@ -173,7 +175,10 @@ class Termit {
 		this.disableUserInteraction = true;
 
 		this.drawPrompt(prompt);
-		let fileOptions = { cancelable: true, default: prefill};
+		let fileOptions = {
+			cancelable: true,
+			default: prefill
+		};
 		this.term.fileInput(fileOptions, (err, file) => {
 			this.disableUserInteraction = false;
 
@@ -191,46 +196,45 @@ class Termit {
 	}
 
 	saveAndExit() {
-		if(this.disableSaveAs && this.currentFile){
+		if (this.disableSaveAs && this.currentFile) {
 			this.save(this.currentFile, err => {
-				if(err){
+				if (err) {
 					this.drawStatusBar('ERR: Could not save file. Hit Ctrl + C to force exit.', 4000);
 					return;
 				}
 
 				this.exit();
-			});			
-		}
-		else {
+			});
+		} else {
 			this.saveAs(err => {
-				if(err){
+				if (err) {
 					this.drawStatusBar('ERR: Could not save file. Hit Ctrl + C to force exit.', 4000);
 					return;
 				}
 
 				this.exit();
-			});			
+			});
 		}
 	}
 
 	exit() {
-		setTimeout(()=>{
+		setTimeout(() => {
 			this.term.grabInput(false);
 			this.term.fullscreen(false);
 
-			setTimeout( () => process.exit(0), 100);
+			setTimeout(() => process.exit(0), 100);
 		}, 100);
 	}
 
 	onResize(width, height) {
 		//this.screenBuffer.
 		//console.log(arguments);
-		if(this.resizeTimer){
+		if (this.resizeTimer) {
 			clearTimeout(this.resizeTimer);
 		}
-		this.resizeTimer = setTimeout(()=>{
+		this.resizeTimer = setTimeout(() => {
 			this.screenBuffer.resize({
-				x:0,
+				x: 0,
 				y: 2,
 				width: width,
 				height: height - 2
@@ -238,46 +242,92 @@ class Termit {
 			this.drawStatusBar();
 			this.drawTitleBar();
 			this.draw();
-		},150);
+		}, 150);
 	}
-	
+
 	onKey(key, matches, data) {
-		if(this.disableUserInteraction && key !== 'CTRL_C') { return; }
+		if (this.disableUserInteraction && key !== 'CTRL_C') {
+			return;
+		}
 
 		switch (key) {
-			case 'CTRL_C':		this.exit(); 				break;
-			case 'CTRL_X':		this.saveAndExit(); 		break;
-			case 'CTRL_S':		this.saveFile();			break;
-			case 'CTRL_A':		this.saveAs();				break;
-			case 'CTRL_O':		this.open();	 			break;
-			case 'CTRL_K':		this.cutLine();	 			break;
-			case 'CTRL_U':		this.pasteLine();			break;
-			case 'PAGE_UP':		this.pgUp();	 			break;
-			case 'PAGE_DOWN':	this.pgDown();	 			break;
-			case 'UP':			this.up();		 			break;
-			case 'DOWN':		this.down();	 			break;
-			case 'LEFT':		this.left();				break;
-			case 'RIGHT':		this.right();		 		break;
-			case 'HOME':		this.startOfLine();	 		break;
-			case 'END':			this.endOfLine();	 		break;
-			case 'TAB':			this.tab();	 				break;
-			case 'CTRL_HOME':	this.startOfText();	 		break;
-			case 'CTRL_END':	this.endOfText();	 		break;
-			case 'DELETE':		this.delete();			 	break;
-			case 'BACKSPACE':	this.backspace();		 	break;
-			case 'ENTER':		this.newLine();				break;
+			case 'CTRL_C':
+				this.exit();
+				break;
+			case 'CTRL_X':
+				this.saveAndExit();
+				break;
+			case 'CTRL_S':
+				this.saveFile();
+				break;
+			case 'CTRL_A':
+				this.saveAs();
+				break;
+			case 'CTRL_O':
+				this.open();
+				break;
+			case 'CTRL_K':
+				this.cutLine();
+				break;
+			case 'CTRL_U':
+				this.pasteLine();
+				break;
+			case 'PAGE_UP':
+				this.pgUp();
+				break;
+			case 'PAGE_DOWN':
+				this.pgDown();
+				break;
+			case 'UP':
+				this.up();
+				break;
+			case 'DOWN':
+				this.down();
+				break;
+			case 'LEFT':
+				this.left();
+				break;
+			case 'RIGHT':
+				this.right();
+				break;
+			case 'HOME':
+				this.startOfLine();
+				break;
+			case 'END':
+				this.endOfLine();
+				break;
+			case 'TAB':
+				this.tab();
+				break;
+			case 'CTRL_HOME':
+				this.startOfText();
+				break;
+			case 'CTRL_END':
+				this.endOfText();
+				break;
+			case 'DELETE':
+				this.delete();
+				break;
+			case 'BACKSPACE':
+				this.backspace();
+				break;
+			case 'ENTER':
+				this.newLine();
+				break;
 			default:
-				if(data.isCharacter){
+				if (data.isCharacter) {
 					this.fileIsModified = true;
 					this.textBuffer.insert(key);
 					this.draw();
-				}			
+				}
 		}
 	}
 
 	draw(delta = true) {
 		this.textBuffer.draw();
-		this.screenBuffer.draw({ delta: delta}); //{delta: delta});
+		this.screenBuffer.draw({
+			delta: delta
+		}); //{delta: delta});
 		this.drawCursor();
 	}
 
@@ -286,65 +336,64 @@ class Termit {
 		let new_buffer_x = this.textBuffer.x;
 		let new_buffer_y = this.textBuffer.y;
 
-		if(this.textBuffer.x < -this.textBuffer.cx){
-			new_buffer_x = Math.min( 0 , -this.textBuffer.cx + Math.floor(this.screenBuffer.width / 2) ) ;
-		}
-		else if(this.textBuffer.x > -this.textBuffer.cx + this.screenBuffer.width -1 ){
+		if (this.textBuffer.x < -this.textBuffer.cx) {
+			new_buffer_x = Math.min(0, -this.textBuffer.cx + Math.floor(this.screenBuffer.width / 2));
+		} else if (this.textBuffer.x > -this.textBuffer.cx + this.screenBuffer.width - 1) {
 			new_buffer_x = (this.screenBuffer.width / 2) - this.textBuffer.cx;
 		}
 
-		if(this.textBuffer.y < -this.textBuffer.cy){
-			new_buffer_y = Math.min( 0 , -this.textBuffer.cy + Math.floor(this.screenBuffer.height / 2) ) ;
-		}
-		else if(this.textBuffer.y > -this.textBuffer.cy + this.screenBuffer.height -1 ){
+		if (this.textBuffer.y < -this.textBuffer.cy) {
+			new_buffer_y = Math.min(0, -this.textBuffer.cy + Math.floor(this.screenBuffer.height / 2));
+		} else if (this.textBuffer.y > -this.textBuffer.cy + this.screenBuffer.height - 1) {
 			new_buffer_y = (this.screenBuffer.height / 2) - this.textBuffer.cy;
 		}
 
-		if(new_buffer_y != this.textBuffer.y || new_buffer_x != this.textBuffer.x){
+		if (new_buffer_y != this.textBuffer.y || new_buffer_x != this.textBuffer.x) {
 			this.textBuffer.x = new_buffer_x;
 			this.textBuffer.y = new_buffer_y;
 			this.textBuffer.draw();
-			this.screenBuffer.draw({delta:true});
+			this.screenBuffer.draw({
+				delta: true
+			});
 		}
 
 		this.textBuffer.drawCursor();
 		this.screenBuffer.drawCursor();
 	}
 
-	up(){
+	up() {
 		this.textBuffer.moveUp();
-		if(this.textBuffer.cx > this.textBuffer.buffer[this.textBuffer.cy].length - 1){
+		if (this.textBuffer.cx > this.textBuffer.buffer[this.textBuffer.cy].length - 1) {
 			this.textBuffer.moveToEndOfLine();
 		}
 		this.drawCursor();
 	}
 
-	down(){
-		if(this.textBuffer.getContentSize().height - 1 > this.textBuffer.cy){
+	down() {
+		if (this.textBuffer.getContentSize().height - 1 > this.textBuffer.cy) {
 			this.textBuffer.moveDown();
 
-			if(this.textBuffer.cx > this.textBuffer.buffer[this.textBuffer.cy].length - 1){
+			if (this.textBuffer.cx > this.textBuffer.buffer[this.textBuffer.cy].length - 1) {
 				this.textBuffer.moveToEndOfLine();
 			}
 			this.drawCursor();
 		}
 	}
 
-	left(){
+	left() {
 		this.textBuffer.moveBackward();
 		this.drawCursor();
 	}
 
-	right(){
+	right() {
 
-		if(this.textBuffer.cx < this.getLine().length){
+		if (this.textBuffer.cx < this.getLine().length) {
 			this.textBuffer.moveRight();
-		}
-		else if(this.textBuffer.getContentSize().height - 1 > this.textBuffer.cy){
-			this.textBuffer.moveTo(0,this.textBuffer.cy + 1);
+		} else if (this.textBuffer.getContentSize().height - 1 > this.textBuffer.cy) {
+			this.textBuffer.moveTo(0, this.textBuffer.cy + 1);
 		}
 		this.drawCursor();
-		
+
 	}
 
 	getLine() {
@@ -354,79 +403,75 @@ class Termit {
 		}, '');
 	}
 
-	startOfLine(){
+	startOfLine() {
 		this.textBuffer.moveToColumn(0);
 		this.drawCursor();
 	}
 
-	endOfLine(){
+	endOfLine() {
 		this.textBuffer.moveToEndOfLine();
 		this.drawCursor();
 	}
 
-	startOfText(){
-		this.textBuffer.moveTo(0,0);
+	startOfText() {
+		this.textBuffer.moveTo(0, 0);
 		this.draw();
 	}
 
-	endOfText(){
+	endOfText() {
 		let num_lines = this.textBuffer.getContentSize().height - 1;
 		let last_line = this.textBuffer.buffer[num_lines];
 		this.textBuffer.moveTo(last_line.length, num_lines);
 		this.draw();
 	}
 
-	pgUp(){
+	pgUp() {
 		this.textBuffer.cy = Math.max(0, this.textBuffer.cy - Math.floor(this.screenBuffer.height / 2));
 		this.draw();
 	}
 
-	pgDown(){
+	pgDown() {
 		this.textBuffer.cy = Math.min(this.textBuffer.getContentSize().height - 1, this.textBuffer.cy + Math.floor(this.screenBuffer.height / 2));
-		this.draw();		
+		this.draw();
 	}
 
-	delete(){
+	delete() {
 		this.fileIsModified = true;
 		this.textBuffer.delete(1);
 		this.draw();
 	}
 
-	backspace(){
+	backspace() {
 		this.fileIsModified = true;
 		this.textBuffer.backDelete(1);
 		this.draw();
 	}
 
-	newLine(){
+	newLine() {
 		this.fileIsModified = true;
 		this.textBuffer.newLine();
 		this.draw();
 	}
 
-	tab(){
+	tab() {
 		this.fileIsModified = true;
 		this.textBuffer.insert('\t');
 		this.draw();
 	}
 
-	cutLine(){
+	cutLine() {
 		this.lineCutBuffer = this.textBuffer.buffer[this.textBuffer.cy];
 
-		if(this.textBuffer.cy == 0 && this.textBuffer.buffer.length == 1)
-		{
+		if (this.textBuffer.cy == 0 && this.textBuffer.buffer.length == 1) {
 			this.textBuffer.buffer[0] = [];
 			this.textBuffer.moveToEndOfLine();
-		}
-		else 
-		{
-			if(this.textBuffer.cy == this.textBuffer.buffer.length -1){
-				this.textBuffer.buffer.splice(this.textBuffer.cy,1,[]);
+		} else {
+			if (this.textBuffer.cy == this.textBuffer.buffer.length - 1) {
+				this.textBuffer.buffer.splice(this.textBuffer.cy, 1, []);
+			} else {
+				this.textBuffer.buffer.splice(this.textBuffer.cy, 1);
 			}
-			else{
-				this.textBuffer.buffer.splice(this.textBuffer.cy,1);
-			}
-			if(this.textBuffer.cx >= this.textBuffer.buffer[this.textBuffer.cy].length){
+			if (this.textBuffer.cx >= this.textBuffer.buffer[this.textBuffer.cy].length) {
 				this.textBuffer.moveToEndOfLine();
 			}
 		}
@@ -435,10 +480,10 @@ class Termit {
 
 	}
 
-	pasteLine(){
-		if(this.lineCutBuffer){
+	pasteLine() {
+		if (this.lineCutBuffer) {
 			this.fileIsModified = true;
-			this.textBuffer.buffer.splice(this.textBuffer.cy,0,this.lineCutBuffer);
+			this.textBuffer.buffer.splice(this.textBuffer.cy, 0, this.lineCutBuffer);
 			this.textBuffer.moveDown();
 			this.draw();
 		}

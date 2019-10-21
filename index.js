@@ -16,7 +16,15 @@ class Termit {
 	constructor(options = {}) {
 
 		this.disableOpen = options.disableOpen || false;
+		if(this.disableOpen){
+			defaults.statusBar.message = defaults.statusBar.message.replace('O:Open  ','');
+		}
+
 		this.disableSaveAs = options.disableSaveAs || false;
+		if(this.disableSaveAs){
+			defaults.statusBar.message = defaults.statusBar.message.replace('A:save As  ','');
+		}
+
 		defaults.titleBar.title = options.title || defaults.titleBar.title;
 
 		this.term = terminalKit.terminal;
@@ -34,8 +42,24 @@ class Termit {
 		});
 		this.textBuffer.setText('');
 
+		this.hookChain = (next) => {
+			next();
+		};
 
 	}
+
+	addPreSaveHook(hook){
+
+		let self = this;
+		this.hookChain = (function(chain) {
+			return function(next) {
+				chain.call(self, function() {
+					hook.call(self, next.bind(self));
+				});
+			}.bind(this);
+		})(this.hookChain);
+	}
+
 
 	init(file) {
 		this.term.on('resize', this.onResize.bind(this));
@@ -57,6 +81,10 @@ class Termit {
 		if (file) {
 			this.load(file);
 		}
+	}
+
+	getText(){
+		return this.textBuffer.getText();
 	}
 
 	drawBar(pos, message, invert = false) {
@@ -116,7 +144,7 @@ class Termit {
 			return;
 		}
 
-		this.getFileName('Open file: ', file => this.load(file));
+		this.getFileNameFromUser('Open file: ', file => this.load(file));
 	}
 
 	load(file) {
@@ -143,7 +171,7 @@ class Termit {
 	save(file, callback = () => {}) {
 		this.disableUserInteraction = true;
 		try {
-			fs.writeFileSync(file, this.textBuffer.getText());
+			fs.writeFileSync(file, this.getText());
 			this.fileIsModified = false;
 			this.currentFile = file;
 			this.drawStatusBar('Saved!', 2000);
@@ -160,18 +188,20 @@ class Termit {
 			return;
 		}
 
-		this.getFileName('Save as: ', file => this.save(file, callback), this.currentFile);
+		this.getFileNameFromUser('Save as: ', file => this.save(file, callback), this.currentFile);
 	}
 
-	saveFile(callback) {
-		if (this.currentFile) {
-			this.save(this.currentFile, callback);
-		} else {
-			this.saveAs(callback);
-		}
+	saveFile() {
+		this.hookChain(()=>{
+			if (this.currentFile) {
+				this.save(this.currentFile);
+			} else {
+				this.saveAs();
+			}
+		});
 	}
 
-	getFileName(prompt, callback, prefill = '') {
+	getFileNameFromUser(prompt, callback, prefill = '') {
 		this.disableUserInteraction = true;
 
 		this.drawPrompt(prompt);
@@ -224,6 +254,11 @@ class Termit {
 
 			setTimeout(() => process.exit(0), 100);
 		}, 100);
+	}
+
+	unload() {
+		this.term.grabInput(false);
+		this.term.fullscreen(false);
 	}
 
 	onResize(width, height) {

@@ -52,8 +52,47 @@ let term = new Termit(options);
 
 ...
 
+// Renders the terminal with no files loaded
+term.init();
+
 // Renders the terminal with the optional
-// file pre-loaded
+// file pre-loaded.
 let file = 'path/to/file';
 term.init(file);
+
+...
+
+// Add pre-save hooks. Useful for doing tasks
+// before save. It uses the express-convention
+// of using 'next()' to continue the chain.
+term.addPreSaveHook( (next) => {
+    console.log(term.getText());
+    next();
+});
+
+// Or in an embedded state extracting the content.
+const mySuperCallback = text => console.log(text);
+term.addPreSaveHook( (next) => {
+    // This callback is now called each time the
+    // user saves, sending the content of the
+    // terminal to the embedding application.
+    mySuperCallback(term.getText());
+    next();
+});
+
+// If you don't want Termit to save to a file, only
+// call the callback, just skip calling 'next'.
+// If you have more than one callback, skip it
+// in the final one you want called
+term.addPreSaveHook( () => { // <-- No need for 'next'
+    mySuperCallback(term.getText());
+});
+
+// Sometimes you want the terminal to quit after save
+// Using 'next' after unload is discouraged, but may
+// function as you expect.
+term.addPreSaveHook( () => {
+    term.unload();
+    mySuperCallback(term.getText());
+});
 ```

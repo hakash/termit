@@ -193,6 +193,10 @@ class Termit {
 
 	saveFile() {
 		this.hookChain(()=>{
+			if(this.getText() == ''){
+				return;
+			}
+
 			if (this.currentFile) {
 				this.save(this.currentFile);
 			} else {

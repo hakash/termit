@@ -5,7 +5,7 @@ const fs = require('fs');
 
 let defaults = {
 	statusBar: {
-		message: 'Ctrl+  X:save & eXit  C:exit  O:Open  S:Save  A:save As  K:cut line  U:paste line'
+		message: 'Ctrl+  X:save & eXit  C:exit  O:Open  S:Save  A:save As  K:cut line  U:paste line '
 	},
 	titleBar: {
 		title: 'Welcome to Termit - The TERMinal edITor!'

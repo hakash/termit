@@ -1,6 +1,7 @@
 'use strict';
 const terminalKit = require('terminal-kit');
 const fs = require('fs');
+const crypto = require('crypto')
 
 
 let defaults = {
@@ -45,6 +46,7 @@ class Termit {
 		this.hookChain = (next) => {
 			next();
 		};
+		this.fileHash = ''
 
 	}
 
@@ -80,6 +82,8 @@ class Termit {
 
 		if (file) {
 			this.load(file);
+		} else {
+			this.fileHash = crypto.createHash('sha256').update(this.textBuffer.getText()).digest('hex');
 		}
 	}
 
@@ -166,6 +170,7 @@ class Termit {
 		this.fileIsModified = false;
 		this.disableUserInteraction = false;
 		this.draw();
+		this.fileHash = crypto.createHash('sha256').update(this.textBuffer.getText()).digest('hex');
 	}
 
 	save(file, callback = () => {}) {
@@ -173,6 +178,7 @@ class Termit {
 		try {
 			fs.writeFileSync(file, this.getText());
 			this.fileIsModified = false;
+			this.fileHash = crypto.createHash('sha256').update(this.textBuffer.getText()).digest('hex');
 			this.currentFile = file;
 			this.drawStatusBar('Saved!', 2000);
 			this.disableUserInteraction = false;
@@ -359,8 +365,13 @@ class Termit {
 				break;
 			default:
 				if (data.isCharacter) {
-					this.fileIsModified = true;
 					this.textBuffer.insert(key);
+					const newHash = crypto.createHash('sha256').update(this.textBuffer.getText()).digest('hex')
+					if(this.fileHash !== newHash){
+						this.fileIsModified = true
+					}else{
+						this.fileIsModified = false
+					}
 					this.draw();
 				}
 		}
@@ -479,26 +490,45 @@ class Termit {
 	}
 
 	delete() {
-		this.fileIsModified = true;
 		this.textBuffer.delete(1);
+		const newHash = crypto.createHash('sha256').update(this.textBuffer.getText()).digest('hex');
+		if(this.fileHash !== newHash){
+			this.fileIsModified = true
+		}else{
+			this.fileIsModified = false
+		}
 		this.draw();
 	}
 
 	backspace() {
-		this.fileIsModified = true;
 		this.textBuffer.backDelete(1);
+		const newHash = crypto.createHash('sha256').update(this.textBuffer.getText()).digest('hex')
+   		if(this.fileHash !== newHash){
+      		this.fileIsModified = true
+    	} else {
+      		this.fileIsModified = false
+    	}
 		this.draw();
 	}
 
 	newLine() {
-		this.fileIsModified = true;
 		this.textBuffer.newLine();
 		this.draw();
+		const newHash = crypto.createHash('sha256').update(this.textBuffer.getText()).digest('hex')
+    	if(this.fileHash !== newHash) {
+      		this.fileIsModified = true
+    	} else {
+      		this.fileIsModified = false
+    	}
 	}
 
 	tab() {
-		this.fileIsModified = true;
 		this.textBuffer.insert('\t');
+		if(this.fileHash !== newHash) {
+			this.fileIsModified = true
+		} else {
+			this.fileIsModified = false
+		}
 		this.draw();
 	}
 
@@ -518,17 +548,27 @@ class Termit {
 				this.textBuffer.moveToEndOfLine();
 			}
 		}
-		this.fileIsModified = true;
+		const newHash = crypto.createHash('sha256').update(this.textBuffer.getText()).digest('hex')
+    	if(this.fileHash !== newHash){
+      		this.fileIsModified = true
+    	} else {
+      		this.fileIsModified = false
+    	}
 		this.draw();
 
 	}
 
 	pasteLine() {
 		if (this.lineCutBuffer) {
-			this.fileIsModified = true;
 			this.textBuffer.buffer.splice(this.textBuffer.cy, 0, this.lineCutBuffer);
 			this.textBuffer.moveDown();
 			this.draw();
+			const newHash = crypto.createHash('sha256').update(this.textBuffer.getText()).digest('hex')
+    		if(this.fileHash !== newHash){
+      			this.fileIsModified = true
+    		} else {
+      			this.fileIsModified = false
+    		}
 		}
 	}
 

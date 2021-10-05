@@ -363,6 +363,18 @@ class Termit {
 			case 'ENTER':
 				this.newLine();
 				break;
+			case 'CTRL_UP':
+				this.pgUp();
+				break;
+			case 'CTRL_DOWN':
+				this.pgDown();
+				break;
+			case 'CTRL_LEFT':
+				this.startOfLine();
+				break;
+			case 'CTRL_RIGHT':
+				this.endOfLine();
+				break;	
 			default:
 				if (data.isCharacter) {
 					this.textBuffer.insert(key);

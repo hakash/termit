@@ -7,7 +7,8 @@
     "termit": "./bin.js"
   },
   "scripts": {
-    "test": "echo 'No tests implemented' && exit(0)"
+    "test": "jest",
+    "testDev": "jest --watchAll --verbose"
   },
   "repository": {
     "type": "git",
@@ -26,5 +27,8 @@
   "homepage": "https://github.com/hakash/termit#readme",
   "dependencies": {
     "terminal-kit": "^1.31.4"
+  },
+  "devDependencies": {
+    "jest": "^27.2.4"
   }
 }

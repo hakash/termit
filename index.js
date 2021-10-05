@@ -316,9 +316,11 @@ class Termit {
 				this.pasteLine();
 				break;
 			case 'PAGE_UP':
+			case 'CTRL_UP':
 				this.pgUp();
 				break;
 			case 'PAGE_DOWN':
+			case 'CTRL_DOWN':
 				this.pgDown();
 				break;
 			case 'UP':
@@ -334,9 +336,11 @@ class Termit {
 				this.right();
 				break;
 			case 'HOME':
+			case 'CTRL_LEFT':
 				this.startOfLine();
 				break;
 			case 'END':
+			case 'CTRL_RIGHT':
 				this.endOfLine();
 				break;
 			case 'TAB':
